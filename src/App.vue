@@ -16,6 +16,7 @@ export default {
 :root{
     --main-color:#f74646;
     --select-box-color: rgb(57, 60, 61);
+    --select-point-width:6px;
 }
 
 *{

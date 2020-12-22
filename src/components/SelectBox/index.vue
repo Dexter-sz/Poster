@@ -3,13 +3,19 @@
         id="SelectBox"
         class="select-box" 
         data-target="poster-item"
+        data-target="poster-item"
         v-show="SelectBox.show"
-        :style="'width:'+SelectBox.width+'px;height:'+SelectBox.height+'px;top:'+SelectBox.top+'px;left:'+SelectBox.left+'px;'"
-    >
-        <i data-target="resize" data-resize="topLeft" class="top left"></i>
-        <i data-target="resize" data-resize="topRight" class="top right"></i>
-        <i data-target="resize" data-resize="bottomLeft" class="bottom left"></i>
-        <i data-target="resize" data-resize="bottomRight" class="bottom right"></i>
+        :style="'width:'+width+';height:'+height+';top:'+top+';left:'+left+';'"
+    >   
+        <template v-if="SelectBox.type==='img'">
+            <i data-target="resize" data-resize="topLeft" class="top left"></i>
+            <i data-target="resize" data-resize="topRight" class="top right"></i>
+            <i data-target="resize" data-resize="bottomLeft" class="bottom left"></i>
+            <i data-target="resize" data-resize="bottomRight" class="bottom right"></i>
+        </template>
+        <template v-else-if="SelectBox.type==='text'">
+            <i data-target="resize" data-resize="centerRight" class="center right"></i>
+        </template>
         
     </div>
 </template>
@@ -19,6 +25,22 @@ import { mapState } from 'vuex';
 
 export default {
     computed: {
+        height:function(){
+            let h = this.SelectBox.height;
+            return `${h}px`;
+        },
+        width:function(){
+            let w = this.SelectBox.width;
+            return `${w}px`;
+        },
+        top:function(){
+            let t = this.SelectBox.top;
+            return `${t}px`;
+        },
+        left:function(){
+            let l = this.SelectBox.left;
+            return `${l}px`;
+        },
         ...mapState([
             'SelectBox',
         ])
@@ -38,22 +60,29 @@ export default {
     cursor: pointer;
     & > i {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        width: var(--select-point-width);
+        height: var(--select-point-width);
         border-radius: 50%;
         background: var(--select-box-color);
 
         &.top {
-            top: -4px;
+            top: calc(var(--select-point-width) * -0.5);
         }
         &.left {
-            left: -4px;
+            left: calc(var(--select-point-width) * -0.5);
         }
         &.bottom {
-            bottom: -4px;
+            bottom: calc(var(--select-point-width) * -0.5);
         }
         &.right {
-            right: -4px;
+            right: calc(var(--select-point-width) * -0.5);
+        }
+
+
+        &.center.right{
+            top:0;
+            bottom:0;
+            margin:auto;
         }
 
         &.top.left {
@@ -67,6 +96,10 @@ export default {
         }
         &.bottom.right {
             cursor: se-resize;
+        }
+        &.center.right,
+        &.center.left {
+            cursor: e-resize;
         }
     }
 }

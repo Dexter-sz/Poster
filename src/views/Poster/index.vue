@@ -1,7 +1,8 @@
 <template>
     <div class="poster-edit-page" @mousedown="posterClick">
         <SelectBox />
-        <Item />
+        <Item type="img" />
+        <Item type="text" />
     </div>
 </template>
 
@@ -22,7 +23,7 @@ export default {
         Item,
     },
     computed: {
-        ...mapState(["SelectBox"]),
+        ...mapState(["SelectBox","selectDom"]),
     },
     methods: {
         // 海报点击
@@ -31,8 +32,8 @@ export default {
             let dom = e.target;
             let { target, resize } = dom.dataset;
 
+            // 点击 poster-item、resize元素的时候不需要隐藏选择框
             let hideSelectDom = ["poster-item", "resize"];
-
             if (!hideSelectDom.includes(target)) {
                 this.hideSelectBox();
             }
@@ -105,66 +106,94 @@ export default {
         },
         // 获取移动后的新样式
         getNewStyle(e) {
+            let maxWidth = 20;
             let newX = e.x;
             let newY = e.y;
             // 各类差值
             let newWidth, newHeight, newTop, newLeft;
             let diffWidth, diffHeight;
-            let { top, left, width, height } = this.SelectBox;
+            let { top, left, width, height,type } = this.SelectBox;
 
+            
             // 获取一个宽高比
             let rateWH = this.getRateByNum(width, height);
 
-            diffWidth = newX - x;
-            direction.includes("Left") && (diffWidth *= -1);
-
             // 计算出新的宽高
-            newWidth = width + diffWidth;
+            diffWidth = newX - x;
+            newWidth = direction.includes("Left") ? width + (diffWidth*-1) : width + diffWidth;
+            
             newHeight = width > height ? newWidth * rateWH : newWidth / rateWH;
 
-            // 计算出高度差值，用来补全top值
-            diffHeight =newHeight - height;
-            direction.includes("top") && (diffHeight *= -1);
+            //  计算出高度差值，用来补全top值
+            diffHeight = newHeight - height;
 
-            newLeft = left + diffWidth;
-            newTop = top + diffHeight;
+            // 文字的高度计算需要用另一种方式
+            if(type === 'text'){
+                this.selectDom.style.height = 'auto';
+                newHeight = this.selectDom.getBoundingClientRect().height;
+                
+                // 文本的最小宽度就是单个文字的宽度
+                var textDom = this.selectDom.firstElementChild;
+                while (!textDom.className.includes("text")) {
+                    textDom = textDom.firstElementChild;
+                }
+                maxWidth = parseInt(textDom.style.fontSize);
+            }
+            
+           
 
-            // console.log();
-            // diffHeight = (width + diffWidth) / rate - height;
+            switch (direction) {
+                // 左上角缩放
+                case "topLeft":
+                    newLeft = left + diffWidth;
+                    newTop = top - diffHeight;
+                    break;
+                // 右上角缩放
+                case "topRight":
+                    newTop = top - diffHeight;
+                    break;
+                // 左下角缩放
+                case "bottomLeft":
+                    newLeft = left + diffWidth;
+                    break;
+                // 右下角缩放
+                case "bottomRight":
+                    break;
+                // 上缩放
+                case "centerTop":
+                    break;
+                // 左缩放
+                case "centerLeft":
+                    break;
+                // 右缩放
+                case "centerRight":
+                    newTop = newLeft = 0;
+                    this.selectDom.height = newHeight;
+                    break;
+                // 下缩放
+                case "centerBottom":
+                    break;
+            }
 
-            // switch (direction) {
-            //     case "topLeft":
-            //         newWidth = width + diffWidth * -1;
-            //         newHeight =
-            //             width > height ? newWidth * rateWH : newWidth / rateWH;
-            //         diffHeight = newHeight - height;
-            //         newLeft = left + diffWidth;
-            //         newTop = top + diffHeight * -1;
-            //         break;
-            //     case "topRight":
-            //         newWidth = width + diffWidth;
-            //         newHeight =
-            //             width > height ? newWidth * rateWH : newWidth / rateWH;
-            //         diffHeight = newHeight - height;
-            //         newLeft = left;
-            //         newTop = top + diffHeight * -1;
-            //         break;
-            //     case "bottomLeft":
-            //         break;
-            // }
+
+
+            // 所有缩放最小宽度为10 
+            if(newWidth <= maxWidth ){
+                return false;
+            }
 
             return {
-                width: newWidth,
-                height: newHeight,
-                top: newTop,
-                left: newLeft,
+                width: newWidth || width,
+                height: newHeight || height,
+                top: newTop || top,
+                left: newLeft || left,
             };
         },
         ...mapMutations(["showSelectBox", "hideSelectBox", "setSelectStyle"]),
     },
 };
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .poster-edit-page {
     width: 100vw;
     height: 100vh;
