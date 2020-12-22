@@ -3,7 +3,6 @@
         id="SelectBox"
         class="select-box" 
         data-target="poster-item"
-        data-target="poster-item"
         v-show="SelectBox.show"
         :style="'width:'+width+';height:'+height+';top:'+top+';left:'+left+';'"
     >   
